@@ -1,27 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Educational Chatbot</title>
-    <script>
-        async function sendMessage() {
-            let userInput = document.getElementById("user-input").value;
-            let responseArea = document.getElementById("chat-area");
-
-            responseArea.innerHTML += "<p><b>You:</b> " + userInput + "</p>";
-
-            let response = await fetch(`/get-response/?message=${userInput}`);
-            let data = await response.json();
-
-            responseArea.innerHTML += "<p><b>Bot:</b> " + data.response + "</p>";
-
-            document.getElementById("user-input").value = "";
-        }
-    </script>
+    <title>Edu Chatbot</title>
 </head>
 <body>
-    <h1>Educational Chatbot</h1>
-    <div id="chat-area"></div>
-    <input type="text" id="user-input" placeholder="Ask a question...">
-    <button onclick="sendMessage()">Send</button>
+
+<h2>Welcome {{ request.user.username }}</h2>
+<a href="/logout/">Logout</a>
+
+<h3>Your Chats</h3>
+{% for chat in chats %}
+    <p onclick="selectChat({{ chat.id }})" style="cursor:pointer;">
+        {{ chat.title }}
+    </p>
+{% endfor %}
+
+<hr>
+
+<div id="chat-box"></div>
+
+<input type="text" id="user-input">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+let currentChatId = null;
+
+function selectChat(chatId){
+    currentChatId = chatId;
+}
+
+async function sendMessage(){
+    let input = document.getElementById("user-input").value;
+
+    let response = await fetch(`/get-response/?message=${input}&chat_id=${currentChatId}`);
+    let data = await response.json();
+
+    document.getElementById("chat-box").innerHTML += 
+        `<p><b>You:</b> ${input}</p>`;
+    document.getElementById("chat-box").innerHTML += 
+        `<p><b>Bot:</b> ${data.response}</p>`;
+
+    document.getElementById("user-input").value = "";
+}
+</script>
+
 </body>
 </html>
