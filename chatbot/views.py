@@ -1,5 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from .models import Chat, Message
 import random
 import nltk
 from nltk.tokenize import word_tokenize
@@ -8,22 +11,14 @@ from nltk.stem import WordNetLemmatizer
 lemmatizer = WordNetLemmatizer()
 
 knowledge_base = {
-    "math": "Mathematics is the study of numbers, quantities, and shapes.",
-    "algebra": "Algebra is a branch of mathematics dealing with symbols and equations.",
-    "geometry": "Geometry studies shapes and space.",
-    "science": "Science studies the natural world.",
-    "physics": "Physics studies matter and energy.",
-    "chemistry": "Chemistry studies substances and reactions.",
-    "biology": "Biology studies living organisms.",
-    "history": "History studies past events.",
-    "python": "Python is a simple and powerful programming language."
+    "math": "Mathematics is the study of numbers.",
+    "python": "Python is a programming language.",
 }
 
 greetings = ["hello", "hi", "hey"]
 greeting_responses = [
-    "Hello! Ask me an educational question.",
-    "Hi there! What would you like to learn?",
-    "Hey! I'm ready to help you learn."
+    "Hello! Ask me something.",
+    "Hi there!",
 ]
 
 def preprocess(sentence):
@@ -41,12 +36,36 @@ def chatbot_response(user_input):
         if word in knowledge_base:
             return knowledge_base[word]
 
-    return "Sorry, I don't have information on that topic yet."
+    return "I don't know that yet."
 
+# -------- SIGNUP --------
+def signup(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'chatbot/signup.html', {'form': form})
+
+# -------- HOME --------
+@login_required
 def home(request):
-    return render(request, "chatbot/home.html")
+    chats = Chat.objects.filter(user=request.user)
+    return render(request, "chatbot/home.html", {"chats": chats})
 
+# -------- GET RESPONSE --------
+@login_required
 def get_response(request):
     user_message = request.GET.get("message")
-    response = chatbot_response(user_message)
-    return JsonResponse({"response": response})
+    chat_id = request.GET.get("chat_id")
+
+    chat = Chat.objects.get(id=chat_id, user=request.user)
+
+    bot_reply = chatbot_response(user_message)
+
+    Message.objects.create(chat=chat, sender="user", content=user_message)
+    Message.objects.create(chat=chat, sender="bot", content=bot_reply)
+
+    return JsonResponse({"response": bot_reply})
