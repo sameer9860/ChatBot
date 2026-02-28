@@ -5,4 +5,5 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('signup/', views.signup, name='signup'),
     path('get-response/', views.get_response, name='get_response'),
+    path('load-messages/<int:chat_id>/', views.load_messages, name='load_messages'),
 ]
