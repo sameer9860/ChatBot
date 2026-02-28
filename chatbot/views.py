@@ -80,3 +80,17 @@ def get_response(request):
         "response": bot_reply,
         "chat_id": chat.id
     })
+    
+@login_required
+def load_messages(request, chat_id):
+    chat = Chat.objects.get(id=chat_id, user=request.user)
+    messages = chat.messages.all().order_by("timestamp")
+
+    data = []
+    for msg in messages:
+        data.append({
+            "sender": msg.sender,
+            "content": msg.content
+        })
+
+    return JsonResponse({"messages": data})    
