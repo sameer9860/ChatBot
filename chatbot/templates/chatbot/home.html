@@ -10,7 +10,7 @@
 
 <h3>Your Chats</h3>
 {% for chat in chats %}
-    <p id="chat-{{ chat.id }}" onclick="selectChat({{ chat.id }})">
+    <p onclick="selectChat({{ chat.id }})" style="cursor:pointer;">
         {{ chat.title }}
     </p>
 {% endfor %}
@@ -26,9 +26,22 @@
 <script>
 let currentChatId = null;
 
-function selectChat(chatId){
+async function selectChat(chatId){
     currentChatId = chatId;
-    document.getElementById("chat-box").innerHTML = "";
+
+    let response = await fetch(`/load-messages/${chatId}/`);
+    let data = await response.json();
+
+    let chatBox = document.getElementById("chat-box");
+    chatBox.innerHTML = "";
+
+    data.messages.forEach(msg => {
+        if (msg.sender === "user") {
+            chatBox.innerHTML += `<p><b>You:</b> ${msg.content}</p>`;
+        } else {
+            chatBox.innerHTML += `<p><b>Bot:</b> ${msg.content}</p>`;
+        }
+    });
 }
 
 async function sendMessage(){
