@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Educational Chatbot</title>
+    <script>
+        async function sendMessage() {
+            let userInput = document.getElementById("user-input").value;
+            let responseArea = document.getElementById("chat-area");
+
+            responseArea.innerHTML += "<p><b>You:</b> " + userInput + "</p>";
+
+            let response = await fetch(`/get-response/?message=${userInput}`);
+            let data = await response.json();
+
+            responseArea.innerHTML += "<p><b>Bot:</b> " + data.response + "</p>";
+
+            document.getElementById("user-input").value = "";
+        }
+    </script>
+</head>
+<body>
+    <h1>Educational Chatbot</h1>
+    <div id="chat-area"></div>
+    <input type="text" id="user-input" placeholder="Ask a question...">
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
