@@ -61,11 +61,22 @@ def get_response(request):
     user_message = request.GET.get("message")
     chat_id = request.GET.get("chat_id")
 
-    chat = Chat.objects.get(id=chat_id, user=request.user)
+    # If no chat selected → create new one
+    if not chat_id:
+        chat = Chat.objects.create(
+            user=request.user,
+            title=user_message[:30]
+        )
+    else:
+        chat = Chat.objects.get(id=chat_id, user=request.user)
 
     bot_reply = chatbot_response(user_message)
 
+    # Save messages
     Message.objects.create(chat=chat, sender="user", content=user_message)
     Message.objects.create(chat=chat, sender="bot", content=bot_reply)
 
-    return JsonResponse({"response": bot_reply})
+    return JsonResponse({
+        "response": bot_reply,
+        "chat_id": chat.id
+    })
