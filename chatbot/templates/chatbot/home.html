@@ -6,14 +6,15 @@
 <body>
 
 <h2>Welcome {{ request.user.username }}</h2>
-<a href="/logout/">Logout</a>
+<a href="/login/">Logout</a>
 
 <h3>Your Chats</h3>
 {% for chat in chats %}
-    <p onclick="selectChat({{ chat.id }})" style="cursor:pointer;">
+    <p id="chat-{{ chat.id }}" onclick="selectChat({{ chat.id }})">
         {{ chat.title }}
     </p>
 {% endfor %}
+
 
 <hr>
 
@@ -27,16 +28,27 @@ let currentChatId = null;
 
 function selectChat(chatId){
     currentChatId = chatId;
+    document.getElementById("chat-box").innerHTML = "";
 }
 
 async function sendMessage(){
     let input = document.getElementById("user-input").value;
 
-    let response = await fetch(`/get-response/?message=${input}&chat_id=${currentChatId}`);
-    let data = await response.json();
+    if (!input.trim()) return;
 
+    // Show user message instantly
     document.getElementById("chat-box").innerHTML += 
         `<p><b>You:</b> ${input}</p>`;
+
+    let response = await fetch(`/get-response/?message=${input}&chat_id=${currentChatId || ''}`);
+    let data = await response.json();
+
+    // Save new chat ID if created
+    if (!currentChatId) {
+        currentChatId = data.chat_id;
+    }
+
+    // Show bot reply
     document.getElementById("chat-box").innerHTML += 
         `<p><b>Bot:</b> ${data.response}</p>`;
 
