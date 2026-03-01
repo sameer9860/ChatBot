@@ -4,10 +4,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from .models import Chat, Message
 import random
-import json
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import difflib
 
@@ -1083,9 +1079,7 @@ knowledge_base = {
 "air": "Air is the mixture of gases surrounding Earth.",
 "fire": "Fire is the rapid oxidation of materials producing heat and light.",
 
-
 }
-
 
 
 
